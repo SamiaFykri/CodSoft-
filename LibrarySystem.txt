@@ -1,0 +1,167 @@
+#include <iostream>
+#include <string>
+#include <map>
+#include <iomanip> // For fixed and setprecision
+using namespace std;
+struct Book
+{
+    string title;
+    string author;
+    string ISBN;
+    bool available = true;
+};
+map<string, Book> bookData; // Store books by ISBN for easy access
+map<string, string> borrowedBooks; // Track borrower and borrowed book ISBNs
+// Function to add initial books to the library database
+void bookDatabase()
+{
+    bookData["123-4-18-148410-0"] = {"Les Misérables, tome 1", "Victor Hugo", "123-4-18-148410-0"};
+    bookData["123-4-18-148410-1"] = {"Le Petit Prince", "Antoine de Saint-Exupéry", "123-4-18-148410-1"};
+    bookData["123-4-18-148410-2"] = {"Technique et Langage", "André Leroi-Gourhan", "123-4-18-148410-2"};
+    bookData["123-4-18-148410-3"] = {"Naissance de la clinique", "Michel Foucault", "123-4-18-148410-3"};
+    bookData["123-4-18-148410-4"] = {"La Double Hélice", "James D. Watson", "123-4-18-148410-4"};
+    bookData["123-4-18-148410-5"] = {"Elonga", "Angèle Rawiri", "123-4-18-148410-5"};
+    bookData["123-4-18-148410-6"] = {"L'héritage du sang", "Michèle Arnaud", "123-4-18-148410-6"};
+}
+// Function to add a new book to the data
+void addBook(const string& isbn, const string& title, const string& author)
+{
+    bookData[isbn] = {title, author, isbn};
+}
+// Function to search a book in the data
+void searchBook(const string& keyword)
+{
+    bool found = false;
+    for (const auto& [isbn, book] : bookData)
+    {
+        if (book.title.find(keyword) != string::npos || book.author.find(keyword) != string::npos || book.ISBN == keyword) 
+        {
+            cout << "ISBN: " << book.ISBN << ", Title: " << book.title << ", Author: " << book.author
+                 << ", Available: " << (book.available ? "Yes" : "No") << endl;
+            found = true;
+        }
+    }
+    if (!found)
+    {
+        cout << "No books found matching the keyword." << endl;
+    }
+}
+// Function to checkout a book
+void checkout(const string& borrower, const string& isbn) 
+{
+    if (bookData.count(isbn) && bookData[isbn].available) 
+    {
+        bookData[isbn].available = false;
+        borrowedBooks[borrower] = isbn;
+        cout << "Book checked out successfully!" << endl;
+    } 
+    else 
+    {
+        cout << "Book is already checked out or does not exist." << endl;
+    }
+}
+// Function to return a borrowed book
+void returnBook(const string& borrower) 
+{
+    if (borrowedBooks.count(borrower)) 
+    {
+        string isbn = borrowedBooks[borrower];
+        if (!bookData[isbn].available) 
+        {
+            bookData[isbn].available = true;
+            borrowedBooks.erase(borrower);
+            cout << "Book returned successfully!" << endl;
+        } 
+    }
+    else 
+    {
+        cout << "No borrowed book found for this borrower." << endl;
+    }
+}
+// Function to calculate the fine
+void calculateFine(const string& borrower, int overdue_days) 
+{
+    const float daily_fine = 2.50;
+    float fine = overdue_days > 30 ? (overdue_days - 30) * daily_fine : 0;
+    cout << "Fine for " << borrower << ": $" << fixed << setprecision(2) << fine << endl;
+}
+// Function to display the main menu options
+void displayMenu()
+{
+    cout << "\n******************** LIBRARY MANAGEMENT SYSTEM ********************\n";
+    cout << "1. View all book\n";
+    cout << "2. Add a new book\n";
+    cout << "3. Search a book\n";
+    cout << "4. Checkout a book\n";
+    cout << "5. Return a book\n";
+    cout << "6. Calculate fine\n";
+    cout << "7. Exit\n";
+    cout << "Select your choice: ";
+}
+
+int main() 
+{
+    bookDatabase();
+    int choice;
+    string borrower, isbn, title, author, keyword;
+    int overdue_days;
+
+    while (true) 
+    {
+        displayMenu();
+        cin >> choice;
+        cin.ignore(); // Ignore any newline characters left in the input buffer
+        switch (choice) 
+        {
+            case 1:
+                cout << "Listing all books:\n";
+                if (!bookData.empty())
+                {
+                    for (const auto& pair : bookData) 
+                    {
+                        const Book& book = pair.second;
+                        cout << "ISBN: " << book.ISBN << ", Title: " << book.title
+                             << ", Author: " << book.author
+                             << ", Available: " << (book.available ? "Yes" : "No") << endl;
+                    }
+                } 
+                else 
+                {
+                    cout << "No books available in the library." << endl;
+                }
+                break;
+            case 2:
+                cout << "Enter ISBN: "; getline(cin, isbn);
+                cout << "Enter Title: "; getline(cin, title);
+                cout << "Enter Author: "; getline(cin, author);
+                addBook(isbn, title, author);
+                cout << "Book added successfully!" << endl;
+                break;
+            case 3:
+                cout << "Enter keyword (title, author, or ISBN): ";
+                getline(cin, keyword);
+                searchBook(keyword);
+                break;
+            case 4:
+                cout << "Enter Borrower Name: "; getline(cin, borrower);
+                cout << "Enter ISBN of the book to checkout: "; getline(cin, isbn);
+                checkout(borrower, isbn);
+                break;
+            case 5:
+                cout << "Enter Borrower Name: "; getline(cin, borrower);
+                returnBook(borrower);
+                break;
+            case 6:
+                cout << "Enter Borrower Name: "; getline(cin, borrower);
+                cout << "Enter overdue days: "; cin >> overdue_days;
+                calculateFine(borrower, overdue_days);
+                break;
+            case 7:
+                cout << "Exiting the system. Thank you!" << endl;
+                return 0;
+            default:
+                cout << "Invalid option. Please try again." << endl;
+        }
+    }
+    return 0;
+}

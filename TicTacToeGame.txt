@@ -1,0 +1,122 @@
+#include <iostream>
+#include <ctime>
+const int BOARD_SIZE = 9;//Table size for easy maintenance
+// Function to draw the Tic-Tac-Toe board
+void drawBoard(char *spaces)
+{
+    std::cout << "\n";
+    std::cout << " ___ ___ ___ " << "\n";
+    std::cout << "| " << spaces[0] << " | " << spaces[1] << " | " << spaces[2] << " | " << "\n";
+    std::cout << "|___|___|___|" << "\n";
+    std::cout << "| " << spaces[3] << " | " << spaces[4] << " | " << spaces[5] << " | " << "\n";
+    std::cout << "|___|___|___|" << "\n";
+    std::cout << "| " << spaces[6] << " | " << spaces[7] << " | " << spaces[8] << " | " << "\n";
+    std::cout << "|___|___|___|" << "\n";
+    std::cout << "\n";
+}
+// Function to handle player's move
+void playerMove(char *spaces, char player)
+{
+    int number;
+    do
+    {
+        std::cout << "Enter a spot to place a marker (1-9)";
+        std::cin >> number;
+        number--;// Adjust for zero-based index
+        // Check if the chosen spot is valid and empty
+        if(number >= 0 && number < BOARD_SIZE && spaces[number] == ' ')
+        {
+            spaces[number] = player;// Place the player's marker
+            break;
+        }
+        else
+        {
+            std::cout << "Invalid move. Please try again.\n";
+        }
+    } while(true);
+}
+// Function to handle computer's move
+void computerMove(char *spaces, char computer)
+{
+    int number;
+    srand(time(0));// Seed the random number generator
+    while(true)
+    {
+        number = rand() % 9;// Generate a random number between 0 and 8
+        if(spaces[number] == ' ')
+        {
+            spaces[number] = computer;// Place the computer's marker
+            break;
+        }
+    }
+}
+// Function to check if there is a winner
+bool checkWinner(char *spaces, char player, char computer)
+{
+    // Winning combinations
+    const int winningCombinations[8][3] =
+    {
+        {0, 1, 2},{3, 4, 5},{6, 7, 8}, // Horizontal
+        {0, 3, 6},{1, 4, 7},{2, 5, 8}, // Verticale
+        {0, 4, 8},{2, 4, 6} // Diagonal
+    };
+    for (const auto& position : winningCombinations)
+    {
+        if (spaces[position[0]] != ' ' && spaces[position[0]] == spaces[position[1]] && spaces[position[1]] == spaces[position[2]])
+        {
+            // Announce the result based on the winner
+            if (spaces[position[0]] = player)
+            {
+                std::cout << "You win!\n";
+            }
+            else
+            {
+                std::cout << "You lose!\n";
+            }
+            return true;// A winner is found
+        }
+    }
+    return false;// No winner
+}
+// Function to check for a tie
+bool checkTie(char *spaces)
+{
+    for(int i = 0; i < 9; i++)
+    {
+        if(spaces[i] == ' ')
+        {
+            return false;
+        }
+    }
+    std::cout << "It's a tie!\n";
+    return true;
+}
+int main()
+{
+    char spaces[9] = {' ',' ',' ',' ',' ',' ',' ',' ',' '};
+    char player = 'x';// Player's marker
+    char computer = 'o';// Computer's marker
+    bool running = true;// Game loop control
+    drawBoard(spaces);// Draw the initial board
+    while(running)
+    {
+        playerMove(spaces, player);// Player's turn
+        drawBoard(spaces); // Draw the board after player's move
+        // Check for winner or tie after player's move
+        if(checkWinner(spaces, player, computer) || checkTie(spaces))
+        {
+            running = false;
+            break;
+        }
+        computerMove(spaces,computer);// Computer's turn
+        drawBoard(spaces);// Draw the board after computer's move
+        // Check for winner or tie after computer's move
+        if(checkWinner(spaces, player, computer) || checkTie(spaces))
+        {
+            running = false;// End the game if there's a winner or tie
+            break;
+        }
+    }
+    std::cout << "Thank you for playing!\n";
+    return 0;
+}
